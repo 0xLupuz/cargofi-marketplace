@@ -1,0 +1,1854 @@
+{
+  "address": "E4usdjyGzbiNfr1QSnndZCgF6JuMEGxcnLvtSdz4Qg3o",
+  "metadata": {
+    "name": "cf_asset",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "CargoFi asset marketplace — fractional truck/trailer tokenization with revenue distribution"
+  },
+  "instructions": [
+    {
+      "name": "buy_shares",
+      "docs": [
+        "Investor purchases fractional shares.",
+        "No CargoFi signature needed — open to any KYC'd wallet."
+      ],
+      "discriminator": [
+        40,
+        239,
+        138,
+        154,
+        8,
+        37,
+        106,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "share_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  104,
+                  97,
+                  114,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "investment_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing.share_mint",
+                "account": "AssetListing"
+              },
+              {
+                "kind": "account",
+                "path": "investor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "investor_usdc",
+          "writable": true
+        },
+        {
+          "name": "investor_shares",
+          "writable": true
+        },
+        {
+          "name": "investor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "shares",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "cancel_listing",
+      "docs": [
+        "Admin cancels listing before any shares are sold."
+      ],
+      "discriminator": [
+        41,
+        183,
+        50,
+        232,
+        230,
+        233,
+        157,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config",
+            "listing"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_revenue",
+      "docs": [
+        "Investor pulls their USDC revenue from an epoch."
+      ],
+      "discriminator": [
+        4,
+        22,
+        151,
+        70,
+        183,
+        79,
+        73,
+        189
+      ],
+      "accounts": [
+        {
+          "name": "listing",
+          "relations": [
+            "epoch"
+          ]
+        },
+        {
+          "name": "epoch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  112,
+                  111,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              },
+              {
+                "kind": "account",
+                "path": "epoch.epoch_number",
+                "account": "RevenueEpoch"
+              }
+            ]
+          }
+        },
+        {
+          "name": "claim_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  108,
+                  97,
+                  105,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "epoch"
+              },
+              {
+                "kind": "account",
+                "path": "investor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing.share_mint",
+                "account": "AssetListing"
+              },
+              {
+                "kind": "account",
+                "path": "investor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "revenue_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "investor_usdc",
+          "writable": true
+        },
+        {
+          "name": "investor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_epoch",
+      "docs": [
+        "Oracle deposits OO's weekly/monthly net revenue and creates a claimable epoch.",
+        "CargoFi platform fee is deducted automatically."
+      ],
+      "discriminator": [
+        115,
+        111,
+        36,
+        230,
+        59,
+        145,
+        168,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "epoch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  112,
+                  111,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              },
+              {
+                "kind": "account",
+                "path": "listing.epoch_count",
+                "account": "AssetListing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "revenue_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_usdc",
+          "writable": true
+        },
+        {
+          "name": "oracle",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "gross_revenue_usdc",
+          "type": "u64"
+        },
+        {
+          "name": "period_start",
+          "type": "i64"
+        },
+        {
+          "name": "period_end",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "decommission",
+      "docs": [
+        "Admin decommissions a listing (truck retired/sold)."
+      ],
+      "discriminator": [
+        175,
+        126,
+        28,
+        122,
+        86,
+        16,
+        107,
+        79
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config",
+            "listing"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_market",
+      "docs": [
+        "Initialize global marketplace config. Called once by CargoFi admin."
+      ],
+      "discriminator": [
+        35,
+        35,
+        189,
+        193,
+        155,
+        48,
+        170,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "platform_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "transfer_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "default_lockup_seconds",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "list_asset",
+      "docs": [
+        "CargoFi admin lists a verified truck/trailer for fractional investment.",
+        "OO does not sign — they are just the beneficiary of raised capital."
+      ],
+      "discriminator": [
+        11,
+        25,
+        254,
+        205,
+        61,
+        252,
+        23,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "asset_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "share_mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  104,
+                  97,
+                  114,
+                  101,
+                  95,
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "asset_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "share_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  104,
+                  97,
+                  114,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "investment_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "revenue_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "asset_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "oo_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "asset_type",
+          "type": "u8"
+        },
+        {
+          "name": "total_shares",
+          "type": "u64"
+        },
+        {
+          "name": "price_per_share_usdc",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "transfer_shares",
+      "docs": [
+        "Sell/transfer shares with lock-up check + 0.5% fee to treasury."
+      ],
+      "discriminator": [
+        23,
+        136,
+        140,
+        15,
+        181,
+        54,
+        120,
+        175
+      ],
+      "accounts": [
+        {
+          "name": "listing"
+        },
+        {
+          "name": "seller_position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing.share_mint",
+                "account": "AssetListing"
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyer_position",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  115,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing.share_mint",
+                "account": "AssetListing"
+              },
+              {
+                "kind": "account",
+                "path": "buyer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seller_shares",
+          "writable": true
+        },
+        {
+          "name": "buyer_shares",
+          "writable": true
+        },
+        {
+          "name": "seller_usdc",
+          "writable": true
+        },
+        {
+          "name": "treasury_usdc",
+          "writable": true
+        },
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "buyer"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "shares",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_market_config",
+      "docs": [
+        "Update global config (admin only)."
+      ],
+      "discriminator": [
+        91,
+        87,
+        149,
+        101,
+        110,
+        116,
+        16,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        },
+        {
+          "name": "platform_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "transfer_fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_investment",
+      "docs": [
+        "OO withdraws their share of raised investment capital.",
+        "OO signs directly with their wallet — no CargoFi approval needed per withdrawal."
+      ],
+      "discriminator": [
+        157,
+        158,
+        101,
+        11,
+        240,
+        193,
+        192,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "listing",
+          "writable": true
+        },
+        {
+          "name": "investment_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  118,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "listing"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oo_usdc",
+          "writable": true
+        },
+        {
+          "name": "oo",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AssetListing",
+      "discriminator": [
+        63,
+        93,
+        166,
+        61,
+        75,
+        89,
+        237,
+        248
+      ]
+    },
+    {
+      "name": "ClaimRecord",
+      "discriminator": [
+        57,
+        229,
+        0,
+        9,
+        65,
+        62,
+        96,
+        7
+      ]
+    },
+    {
+      "name": "InvestorPosition",
+      "discriminator": [
+        145,
+        143,
+        236,
+        150,
+        229,
+        40,
+        195,
+        88
+      ]
+    },
+    {
+      "name": "MarketConfig",
+      "discriminator": [
+        119,
+        255,
+        200,
+        88,
+        252,
+        82,
+        128,
+        24
+      ]
+    },
+    {
+      "name": "RevenueEpoch",
+      "discriminator": [
+        92,
+        96,
+        185,
+        132,
+        167,
+        75,
+        54,
+        150
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AssetListed",
+      "discriminator": [
+        39,
+        64,
+        97,
+        162,
+        189,
+        150,
+        150,
+        2
+      ]
+    },
+    {
+      "name": "EpochCreated",
+      "discriminator": [
+        191,
+        150,
+        240,
+        63,
+        59,
+        212,
+        233,
+        124
+      ]
+    },
+    {
+      "name": "FundsWithdrawn",
+      "discriminator": [
+        56,
+        130,
+        230,
+        154,
+        35,
+        92,
+        11,
+        118
+      ]
+    },
+    {
+      "name": "MarketConfigInitialized",
+      "discriminator": [
+        215,
+        170,
+        151,
+        136,
+        30,
+        87,
+        38,
+        101
+      ]
+    },
+    {
+      "name": "RevenueClaimed",
+      "discriminator": [
+        5,
+        254,
+        104,
+        87,
+        133,
+        137,
+        45,
+        116
+      ]
+    },
+    {
+      "name": "SharesPurchased",
+      "discriminator": [
+        24,
+        220,
+        223,
+        28,
+        213,
+        182,
+        47,
+        22
+      ]
+    },
+    {
+      "name": "SharesTransferred",
+      "discriminator": [
+        219,
+        222,
+        239,
+        232,
+        2,
+        70,
+        64,
+        200
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "name": "ListingNotOpen",
+      "msg": "Listing is not open"
+    },
+    {
+      "code": 6002,
+      "name": "InsufficientShares",
+      "msg": "Not enough shares available"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6004,
+      "name": "FeeTooHigh",
+      "msg": "Transfer fee exceeds 5%"
+    },
+    {
+      "code": 6005,
+      "name": "LockupActive",
+      "msg": "Shares still in lock-up"
+    },
+    {
+      "code": 6006,
+      "name": "AlreadyClaimed",
+      "msg": "Already claimed this epoch"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidShareCount",
+      "msg": "Invalid share count (100–1,000,000)"
+    },
+    {
+      "code": 6008,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6009,
+      "name": "NoSharesHeld",
+      "msg": "No shares held"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient vault balance"
+    },
+    {
+      "code": 6011,
+      "name": "SharesSoldCannotCancel",
+      "msg": "Listing has shares sold — cannot cancel"
+    }
+  ],
+  "types": [
+    {
+      "name": "AssetListed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "oo_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "total_shares",
+            "type": "u64"
+          },
+          {
+            "name": "price_per_share",
+            "type": "u64"
+          },
+          {
+            "name": "asset_type",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetListing",
+      "docs": [
+        "Asset marketplace listing — one per truck / trailer.",
+        "CargoFi admin creates this after verifying the asset and the OO.",
+        "",
+        "PDA: [LISTING_SEED, asset_id (16 bytes UUID)]",
+        "Note: asset_id is the listing seed — guarantees uniqueness across all OOs."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "CargoFi admin wallet (created + manages this listing)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "CargoFi oracle — deposits revenue epochs"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "CargoFi treasury — receives transfer fees"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oo_wallet",
+            "docs": [
+              "Owner-Operator wallet — receives investor capital when they withdraw",
+              "Does NOT need to sign listing creation. Just a beneficiary address."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "share_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "investment_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "revenue_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "share_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "asset_type",
+            "docs": [
+              "0=Truck 1=Trailer 2=Other"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "total_shares",
+            "type": "u64"
+          },
+          {
+            "name": "shares_sold",
+            "type": "u64"
+          },
+          {
+            "name": "price_per_share_usdc",
+            "docs": [
+              "USDC per share, 6 decimals (e.g. 6_500_000 = $6.50)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_value_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "transfer_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "lock_up_seconds",
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "AssetStatus"
+              }
+            }
+          },
+          {
+            "name": "epoch_count",
+            "type": "u64"
+          },
+          {
+            "name": "total_revenue_distributed_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "total_invested_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "total_withdrawn_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "FullyFunded"
+          },
+          {
+            "name": "Decommissioned"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimRecord",
+      "docs": [
+        "Prevents double-claiming per investor per epoch.",
+        "PDA: [CLAIM_SEED, epoch_pda, investor]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": "pubkey"
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares_at_claim",
+            "type": "u64"
+          },
+          {
+            "name": "amount_claimed_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "claimed_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EpochCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "total_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "shares_snapshot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundsWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "oo_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvestorPosition",
+      "docs": [
+        "Per-investor position — tracks shares owned and lock-up.",
+        "PDA: [POSITION_SEED, share_mint, investor]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "share_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares_held",
+            "type": "u64"
+          },
+          {
+            "name": "first_purchase_at",
+            "type": "i64"
+          },
+          {
+            "name": "last_purchase_at",
+            "type": "i64"
+          },
+          {
+            "name": "total_invested_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "total_claimed_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketConfig",
+      "docs": [
+        "Global marketplace config — one per deployment.",
+        "PDA: [CONFIG_SEED]",
+        "CargoFi admin creates this once. Controls who can list assets and collect fees."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "CargoFi admin (will be a Squads multisig in production)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "Default oracle for all listings (oracle service wallet)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "CargoFi treasury — receives platform fees from every transfer"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "platform_fee_bps",
+            "docs": [
+              "Platform cut of each revenue distribution in bps (e.g. 200 = 2%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "transfer_fee_bps",
+            "docs": [
+              "Global transfer fee in bps for secondary sales (e.g. 50 = 0.5%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "default_lockup_seconds",
+            "docs": [
+              "Default lock-up in seconds after purchase"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "listing_count",
+            "docs": [
+              "Total listings created"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketConfigInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevenueClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_usdc",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevenueEpoch",
+      "docs": [
+        "Revenue epoch — snapshot + USDC pool for one distribution period.",
+        "PDA: [EPOCH_SEED, listing_pda, epoch_number as 8 LE bytes]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch_number",
+            "type": "u64"
+          },
+          {
+            "name": "total_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "shares_snapshot",
+            "type": "u64"
+          },
+          {
+            "name": "claimed_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "period_start",
+            "type": "i64"
+          },
+          {
+            "name": "period_end",
+            "type": "i64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SharesPurchased",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares",
+            "type": "u64"
+          },
+          {
+            "name": "usdc_paid",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SharesTransferred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "share_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "from",
+            "type": "pubkey"
+          },
+          {
+            "name": "to",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares",
+            "type": "u64"
+          },
+          {
+            "name": "fee_usdc",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

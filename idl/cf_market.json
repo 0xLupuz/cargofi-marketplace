@@ -1,0 +1,773 @@
+{
+  "address": "6EFtF5g2Sg9ESkkcYTBedkFWK7KG7BWt4sbHjxaZnNsy",
+  "metadata": {
+    "name": "cf_market",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "CargoFi Invoice Marketplace — single-investor freight invoice factoring"
+  },
+  "instructions": [
+    {
+      "name": "cancel_deal",
+      "docs": [
+        "Admin cancels an open deal (no investor yet)."
+      ],
+      "discriminator": [
+        158,
+        86,
+        193,
+        45,
+        168,
+        111,
+        48,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "deal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "default_deal",
+      "docs": [
+        "Oracle marks a deal as defaulted (broker didn't pay).",
+        "If partial recovery: oracle sends recovery_amount to investor first."
+      ],
+      "discriminator": [
+        211,
+        37,
+        148,
+        98,
+        170,
+        252,
+        255,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "deal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_usdc",
+          "docs": [
+            "Oracle USDC ATA — has partial recovery funds (can be 0)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "investor_usdc",
+          "docs": [
+            "Investor USDC ATA"
+          ],
+          "writable": true
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "oracle",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "recovery_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "fund_deal",
+      "docs": [
+        "Investor funds an open deal.",
+        "Transfers advance_amount USDC: investor → deal_vault.",
+        "Then immediately releases advance_amount from vault → carrier.",
+        "Investor's principal + fee is owed back by oracle on settle."
+      ],
+      "discriminator": [
+        8,
+        26,
+        74,
+        169,
+        132,
+        56,
+        104,
+        60
+      ],
+      "accounts": [
+        {
+          "name": "deal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "deal_vault",
+          "docs": [
+            "Deal vault — token account owned by the deal PDA"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "investor_usdc",
+          "docs": [
+            "Investor USDC ATA — must have >= advance_amount"
+          ],
+          "writable": true
+        },
+        {
+          "name": "carrier_usdc",
+          "docs": [
+            "Carrier USDC ATA — receives the advance immediately"
+          ],
+          "writable": true
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "investor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "list_deal",
+      "docs": [
+        "Admin lists a new invoice deal available for investor funding.",
+        "Carrier is identified by wallet + USDC ATA.",
+        "advance_rate_bps: how much (as bps of gross) goes to carrier immediately",
+        "fee_bps: how much (as bps of gross) investor earns when settled"
+      ],
+      "discriminator": [
+        139,
+        243,
+        134,
+        91,
+        59,
+        0,
+        38,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "deal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "carrier"
+        },
+        {
+          "name": "carrier_usdc",
+          "docs": [
+            "Carrier USDC ATA — validated to be a token account"
+          ]
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "gross_amount",
+          "type": "u64"
+        },
+        {
+          "name": "advance_rate_bps",
+          "type": "u16"
+        },
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "settle_deal",
+      "docs": [
+        "Oracle settles a funded deal once broker has paid.",
+        "Transfers (advance_amount + fee_amount) from oracle_usdc → investor_usdc."
+      ],
+      "discriminator": [
+        28,
+        10,
+        168,
+        174,
+        203,
+        149,
+        134,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "deal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oracle_usdc",
+          "docs": [
+            "Oracle USDC ATA — has the funds to repay investor"
+          ],
+          "writable": true
+        },
+        {
+          "name": "investor_usdc",
+          "docs": [
+            "Investor USDC ATA — receives principal + fee"
+          ],
+          "writable": true
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "oracle",
+          "docs": [
+            "Oracle signer (CargoFi backend)"
+          ],
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "InvoiceDeal",
+      "discriminator": [
+        53,
+        198,
+        79,
+        160,
+        250,
+        111,
+        141,
+        160
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "DealDefaulted",
+      "discriminator": [
+        44,
+        167,
+        115,
+        153,
+        101,
+        107,
+        237,
+        71
+      ]
+    },
+    {
+      "name": "DealFunded",
+      "discriminator": [
+        64,
+        84,
+        19,
+        153,
+        179,
+        255,
+        127,
+        144
+      ]
+    },
+    {
+      "name": "DealListed",
+      "discriminator": [
+        33,
+        8,
+        33,
+        180,
+        72,
+        88,
+        95,
+        101
+      ]
+    },
+    {
+      "name": "DealSettled",
+      "discriminator": [
+        41,
+        213,
+        235,
+        64,
+        55,
+        168,
+        51,
+        76
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "DealNotOpen",
+      "msg": "Deal is not in Open status"
+    },
+    {
+      "code": 6001,
+      "name": "DealNotFunded",
+      "msg": "Deal is not in Funded status"
+    },
+    {
+      "code": 6002,
+      "name": "InvoiceIdMismatch",
+      "msg": "Invoice ID does not match deal"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidRates",
+      "msg": "Invalid advance or fee rates"
+    },
+    {
+      "code": 6005,
+      "name": "NoInvestor",
+      "msg": "No investor on this deal"
+    },
+    {
+      "code": 6006,
+      "name": "WrongInvestor",
+      "msg": "Wrong investor account"
+    },
+    {
+      "code": 6007,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6008,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    }
+  ],
+  "types": [
+    {
+      "name": "DealDefaulted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "recovery_amount",
+            "type": "u64"
+          },
+          {
+            "name": "loss_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DealFunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "advance_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DealListed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "gross_amount",
+            "type": "u64"
+          },
+          {
+            "name": "advance_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_amount",
+            "type": "u64"
+          },
+          {
+            "name": "carrier",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DealSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "investor",
+            "type": "pubkey"
+          },
+          {
+            "name": "return_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_earned",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DealStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Funded"
+          },
+          {
+            "name": "Settled"
+          },
+          {
+            "name": "Defaulted"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceDeal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "carrier",
+            "type": "pubkey"
+          },
+          {
+            "name": "carrier_usdc",
+            "type": "pubkey"
+          },
+          {
+            "name": "investor",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "investor_usdc",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "gross_amount",
+            "type": "u64"
+          },
+          {
+            "name": "advance_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_amount",
+            "type": "u64"
+          },
+          {
+            "name": "advance_rate_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "DealStatus"
+              }
+            }
+          },
+          {
+            "name": "listed_at",
+            "type": "i64"
+          },
+          {
+            "name": "funded_at",
+            "type": "i64"
+          },
+          {
+            "name": "settled_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

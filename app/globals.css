@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import '@solana/wallet-adapter-react-ui/styles.css';
+
+:root {
+  --bg-base:    #0d1117;
+  --bg-card:    #161b22;
+  --bg-card-2:  #1c2333;
+  --border:     #30363d;
+  --border-2:   #21262d;
+  --text-1:     #f0f6fc;
+  --text-2:     #8b949e;
+  --text-3:     #484f58;
+  --brand:      #3ab690;
+  --brand-dim:  rgba(58,182,144,0.12);
+  --brand-2:    #1a9d75;
+  --blue:       #58a6ff;
+  --purple:     #a78bfa;
+  --yellow:     #d29922;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-1);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+/* ── Gradient text (cross-browser) ─────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #3ab690 0%, #72d2b3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.card-2 {
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3ab690, #1a9d75);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  color: var(--text-1);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+.btn-secondary:hover { background: var(--bg-card-2); }
+
+/* ── Stat cards ──────────────────────────────────────── */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+}
+
+/* ── Product cards ───────────────────────────────────── */
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color 0.15s;
+}
+.product-card:hover { border-color: var(--brand); }
+
+/* ── Wallet adapter override ─────────────────────────── */
+.wallet-adapter-button {
+  background: linear-gradient(135deg, #3ab690, #1a9d75) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  height: 40px !important;
+  padding: 0 16px !important;
+}
+.wallet-adapter-button:hover { opacity: 0.85 !important; }
+.wallet-adapter-modal-wrapper {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT UTILITIES
+   ══════════════════════════════════════════════════════ */
+
+.page-wrap       { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+.page-wrap-sm    { max-width: 900px;  margin: 0 auto; padding: 40px 20px; }
+
+/* Stat grids */
+.rg-3  { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.rg-4  { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+/* Two-col sidebar (main + sidebar) */
+.layout-sidebar { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+
+/* Two-col detail panel */
+.layout-detail  { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+
+/* Invoice table row */
+.inv-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px 100px 140px 60px;
+  gap: 0;
+  align-items: center;
+  cursor: pointer;
+  padding: 16px 20px;
+}
+.inv-header {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px 100px 140px 60px;
+  gap: 0;
+  padding: 10px 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #484f58;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+.inv-col-status  {}
+.inv-col-amount  {}
+.inv-col-yield   {}
+.inv-col-advance {}
+.inv-col-toggle  { display: flex; justify-content: flex-end; }
+
+/* ── Mobile ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .page-wrap, .page-wrap-sm { padding: 20px 12px; }
+
+  .rg-3 { grid-template-columns: repeat(2,1fr); gap: 8px; }
+  .rg-4 { grid-template-columns: repeat(2,1fr); gap: 8px; }
+
+  .layout-sidebar { grid-template-columns: 1fr; }
+  .layout-detail  { grid-template-columns: 1fr; }
+
+  .hide-mobile { display: none !important; }
+
+  /* Invoice table → card style on mobile */
+  .inv-header { display: none !important; }
+  .inv-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px;
+    padding: 14px 16px;
+  }
+  .inv-col-id     { grid-column: 1; font-size: 12px; }
+  .inv-col-status { grid-column: 2; grid-row: 1; }
+  .inv-col-amount { grid-column: 1; grid-row: 2; font-size: 13px; }
+  .inv-col-yield  { display: none; }
+  .inv-col-advance{ display: none; }
+  .inv-col-toggle { grid-column: 2; grid-row: 2; }
+
+  /* Pool APY table → 2 cols on small */
+  .apy-grid { grid-template-columns: repeat(2,1fr) !important; }
+
+  /* Reduce heading sizes */
+  h1 { font-size: 20px !important; }
+}
+
+@media (max-width: 480px) {
+  .rg-3, .rg-4 { grid-template-columns: 1fr 1fr; }
+}

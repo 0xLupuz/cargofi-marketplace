@@ -1,0 +1,1508 @@
+{
+  "address": "7W6hj8iqC65fht7wj4DBDt2kg428RdCDUqLS8ytWeonr",
+  "metadata": {
+    "name": "cf_pool",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "CargoFi invoice factoring pool — USDC yield for investors, instant advances for carriers"
+  },
+  "instructions": [
+    {
+      "name": "cancel_invoice",
+      "docs": [
+        "Cancel a pending invoice (oracle or carrier can cancel before funding)."
+      ],
+      "discriminator": [
+        88,
+        158,
+        54,
+        49,
+        53,
+        26,
+        92,
+        68
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "invoice",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "Oracle OR the carrier themselves can cancel"
+          ],
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "default_invoice",
+      "docs": [
+        "Oracle marks an overdue invoice as defaulted — records the loss."
+      ],
+      "discriminator": [
+        76,
+        152,
+        135,
+        6,
+        213,
+        254,
+        162,
+        138
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          },
+          "relations": [
+            "invoice"
+          ]
+        },
+        {
+          "name": "invoice",
+          "writable": true
+        },
+        {
+          "name": "oracle",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "LP deposits USDC into the pool, receives proportional shares."
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "deposit_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "depositor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "depositor_usdc",
+          "docs": [
+            "Depositor's USDC token account (must have ≥ amount)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "depositor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "fund_invoice",
+      "docs": [
+        "Oracle approves and funds the invoice — sends USDC advance to carrier."
+      ],
+      "discriminator": [
+        216,
+        254,
+        189,
+        107,
+        87,
+        170,
+        154,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          },
+          "relations": [
+            "invoice"
+          ]
+        },
+        {
+          "name": "usdc_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "invoice",
+          "writable": true
+        },
+        {
+          "name": "carrier_usdc",
+          "docs": [
+            "Carrier's USDC token account (stored on the invoice account)"
+          ],
+          "writable": true
+        },
+        {
+          "name": "oracle",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_pool",
+      "docs": [
+        "Create the USDC factoring pool."
+      ],
+      "discriminator": [
+        95,
+        180,
+        10,
+        172,
+        84,
+        174,
+        232,
+        40
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "usdc_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_vault",
+          "docs": [
+            "Token account that holds the pooled USDC.",
+            "Authority is set to the pool PDA (so it can sign transfers)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "factoring_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "advance_rate_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_kyc_tier",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "set_oracle",
+      "docs": [
+        "Update oracle address."
+      ],
+      "discriminator": [
+        186,
+        128,
+        81,
+        104,
+        74,
+        79,
+        18,
+        224
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "pool"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_oracle",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_paused",
+      "docs": [
+        "Pause / unpause the pool."
+      ],
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "pool"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "settle_invoice",
+      "docs": [
+        "Oracle confirms broker paid — USDC arrives in vault, pool earns the fee.",
+        "Caller must first transfer gross_amount into the vault externally (or",
+        "this ix can accept a CPI-ready transfer instruction in the same tx)."
+      ],
+      "discriminator": [
+        158,
+        21,
+        30,
+        6,
+        102,
+        4,
+        176,
+        85
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          },
+          "relations": [
+            "invoice"
+          ]
+        },
+        {
+          "name": "invoice",
+          "writable": true
+        },
+        {
+          "name": "oracle",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit_invoice",
+      "docs": [
+        "Carrier submits an invoice for factoring.",
+        "Off-chain: oracle validates the load exists in CargoFi Dispatch."
+      ],
+      "discriminator": [
+        95,
+        35,
+        66,
+        193,
+        130,
+        108,
+        39,
+        144
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "invoice",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  118,
+                  111,
+                  105,
+                  99,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "arg",
+                "path": "invoice_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "carrier_usdc",
+          "docs": [
+            "Carrier's USDC token account that receives the advance"
+          ]
+        },
+        {
+          "name": "carrier",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "invoice_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "gross_amount",
+          "type": "u64"
+        },
+        {
+          "name": "due_in_seconds",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "transfer_admin",
+      "docs": [
+        "Transfer admin authority."
+      ],
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "pool"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "docs": [
+        "LP redeems shares for USDC + accrued yield."
+      ],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.usdc_mint",
+                "account": "PoolState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "deposit_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  112,
+                  111,
+                  115,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "depositor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "depositor_usdc",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "relations": [
+            "deposit_record"
+          ]
+        },
+        {
+          "name": "depositor",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "shares",
+          "type": "u128"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "InvoiceAccount",
+      "discriminator": [
+        105,
+        207,
+        226,
+        227,
+        85,
+        35,
+        132,
+        40
+      ]
+    },
+    {
+      "name": "LpDeposit",
+      "discriminator": [
+        228,
+        76,
+        221,
+        138,
+        156,
+        203,
+        67,
+        139
+      ]
+    },
+    {
+      "name": "PoolState",
+      "discriminator": [
+        247,
+        237,
+        227,
+        245,
+        215,
+        195,
+        222,
+        70
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "InvoiceDefaulted",
+      "discriminator": [
+        119,
+        14,
+        116,
+        66,
+        30,
+        12,
+        47,
+        16
+      ]
+    },
+    {
+      "name": "InvoiceFunded",
+      "discriminator": [
+        33,
+        90,
+        129,
+        131,
+        31,
+        43,
+        33,
+        33
+      ]
+    },
+    {
+      "name": "InvoiceSettled",
+      "discriminator": [
+        189,
+        113,
+        70,
+        104,
+        148,
+        113,
+        164,
+        65
+      ]
+    },
+    {
+      "name": "InvoiceSubmitted",
+      "discriminator": [
+        79,
+        205,
+        42,
+        161,
+        89,
+        198,
+        103,
+        253
+      ]
+    },
+    {
+      "name": "LpDeposited",
+      "discriminator": [
+        85,
+        211,
+        184,
+        159,
+        176,
+        224,
+        28,
+        72
+      ]
+    },
+    {
+      "name": "LpWithdrawn",
+      "discriminator": [
+        188,
+        10,
+        43,
+        60,
+        223,
+        238,
+        51,
+        153
+      ]
+    },
+    {
+      "name": "PoolInitialized",
+      "discriminator": [
+        100,
+        118,
+        173,
+        87,
+        12,
+        198,
+        254,
+        229
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "PoolPaused",
+      "msg": "Pool is paused"
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Unauthorized — admin only"
+    },
+    {
+      "code": 6002,
+      "name": "OracleUnauthorized",
+      "msg": "Unauthorized — oracle only"
+    },
+    {
+      "code": 6003,
+      "name": "FeeTooHigh",
+      "msg": "Fee exceeds maximum (10%)"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidRate",
+      "msg": "Advance rate out of range (80–99%)"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAmount",
+      "msg": "Amount must be greater than zero"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientShares",
+      "msg": "Insufficient LP shares for withdrawal"
+    },
+    {
+      "code": 6007,
+      "name": "InsufficientLiquidity",
+      "msg": "Insufficient pool liquidity"
+    },
+    {
+      "code": 6008,
+      "name": "NotPending",
+      "msg": "Invoice is not in Pending status"
+    },
+    {
+      "code": 6009,
+      "name": "NotFunded",
+      "msg": "Invoice is not in Funded status"
+    },
+    {
+      "code": 6010,
+      "name": "NotOverdue",
+      "msg": "Invoice is not yet overdue"
+    },
+    {
+      "code": 6011,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "InvoiceAccount",
+      "docs": [
+        "Invoice submitted for factoring.",
+        "PDA: [INVOICE_SEED, pool, invoice_id (16 bytes UUID)]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "carrier_wallet",
+            "docs": [
+              "Carrier's wallet (must be KYC-approved in cf-kyc)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "carrier_usdc",
+            "docs": [
+              "Carrier's USDC token account — receives the advance"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "invoice_id",
+            "docs": [
+              "16-byte UUID from CargoFi Dispatch (matches Supabase load id)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "gross_amount",
+            "docs": [
+              "Full invoice value in USDC (6 decimals)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "advance_amount",
+            "docs": [
+              "Advance sent to carrier = gross * advance_rate_bps / 10_000"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fee_amount",
+            "docs": [
+              "Fee retained by pool = gross - advance"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "InvoiceStatus"
+              }
+            }
+          },
+          {
+            "name": "submitted_at",
+            "type": "i64"
+          },
+          {
+            "name": "funded_at",
+            "type": "i64"
+          },
+          {
+            "name": "due_at",
+            "docs": [
+              "Expected settlement date (funded_at + 45 days typically)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "settled_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceDefaulted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "loss_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceFunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "advance_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "gross_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Funded"
+          },
+          {
+            "name": "Settled"
+          },
+          {
+            "name": "Defaulted"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InvoiceSubmitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "invoice_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "carrier",
+            "type": "pubkey"
+          },
+          {
+            "name": "gross_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LpDeposit",
+      "docs": [
+        "Per-depositor LP position.",
+        "PDA: [DEPOSIT_SEED, pool, depositor]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "shares",
+            "docs": [
+              "LP shares owned (u128 for precision)"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "total_deposited",
+            "docs": [
+              "Total USDC deposited by this LP (for display purposes)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_withdrawn",
+            "docs": [
+              "Total USDC withdrawn by this LP"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LpDeposited",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "depositor",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_amount",
+            "type": "u64"
+          },
+          {
+            "name": "shares_minted",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LpWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "depositor",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_amount",
+            "type": "u64"
+          },
+          {
+            "name": "shares_burned",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "factoring_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "advance_rate_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolState",
+      "docs": [
+        "Global pool — one per USDC mint for this deployment.",
+        "PDA: [POOL_SEED, usdc_mint]"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "Admin / upgrade authority"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle",
+            "docs": [
+              "Authorized oracle that funds / settles invoices"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "docs": [
+              "USDC mint (devnet: any SPL mint; mainnet: USDC)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_vault",
+            "docs": [
+              "Token account holding pooled USDC (authority = pool PDA)"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "total_deposits",
+            "docs": [
+              "Total USDC ever deposited (increases on deposit, decreases on withdraw)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_deployed",
+            "docs": [
+              "USDC currently locked in active invoices"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_interest_earned",
+            "docs": [
+              "Total interest/fees accrued to the pool (increases on settlement)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_shares",
+            "docs": [
+              "Total LP shares outstanding (u128 to handle precision)"
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "factoring_fee_bps",
+            "docs": [
+              "Factoring fee in bps deducted from invoice on advance  (e.g. 300 = 3%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "advance_rate_bps",
+            "docs": [
+              "Percentage of invoice advanced to carrier  (e.g. 9700 = 97%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "min_kyc_tier",
+            "docs": [
+              "Minimum KYC tier required to deposit (0 = anyone, 2 = accredited)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "paused",
+            "docs": [
+              "Pool is paused — no deposits, no new invoices"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "invoice_count",
+            "type": "u64"
+          },
+          {
+            "name": "settled_count",
+            "type": "u64"
+          },
+          {
+            "name": "defaulted_count",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
