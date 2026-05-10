@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/invoices',  label: 'Invoices'    },
   { href: '/assets',    label: 'Assets'      },
   { href: '/portfolio', label: 'Portfolio'   },
+  { href: '/roadmap',   label: 'Roadmap'     },
 ]
 
 export function Navbar() {
