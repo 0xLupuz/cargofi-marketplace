@@ -24,6 +24,7 @@ interface FactoringRequest {
   investor_fee_usdc: number | null; platform_fee_usdc: number | null
   carrier_wallet: string | null; carrier_usdc_account: string | null
   status: string; created_at: string; invoice_id_hex: string
+  list_tx: string | null; submit_tx: string | null
 }
 
 const STATUS: Record<string, { label: string; color: string; bg: string; border: string }> = {
@@ -326,6 +327,20 @@ export default function InvoicesPage() {
                               <span style={{ color: k === 'Est. broker payment' ? '#d29922' : '#f0f6fc', fontFamily: k === 'Invoice ID' ? 'monospace' : 'inherit' }}>{v}</span>
                             </div>
                           ))}
+                          {inv.list_tx && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                              <span style={{ color: '#8b949e' }}>Solana Explorer</span>
+                              <a
+                                href={`https://explorer.solana.com/tx/${inv.list_tx}?cluster=devnet`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: BRAND, fontFamily: 'monospace', fontSize: 11, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+                                onClick={e => e.stopPropagation()}
+                              >
+                                {inv.list_tx.slice(0, 12)}… ↗
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
 
