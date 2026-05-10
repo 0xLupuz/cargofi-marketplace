@@ -282,12 +282,20 @@ export default function AssetsPage() {
         <img src="/icon-192x192.png" alt="CargoFi" style={{ width: 48, height: 48, objectFit: 'contain' }} />
         <div>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#f0f6fc' }}>Asset Marketplace</h1>
-          <p style={{ margin: 0, fontSize: 14, color: '#8b949e' }}>Fractional ownership of commercial trucks — devnet</p>
+          <p style={{ margin: 0, fontSize: 14, color: '#8b949e' }}>Fractional ownership of commercial trucks · Solana</p>
         </div>
       </div>
 
-      <div style={{ background: BRAND_BG, border: `1px solid ${BRAND_BORDER}`, borderRadius: 10, padding: '12px 16px', marginBottom: 28, fontSize: 13, color: '#8b949e', lineHeight: 1.6 }}>
-        <strong style={{ color: '#f0f6fc' }}>Devnet mode.</strong> USDC is test tokens. Share purchases are recorded on-chain (tx) + Supabase. cf-asset on-chain integration coming soon.
+      <div style={{ background: 'rgba(210,153,34,0.08)', border: '1px solid rgba(210,153,34,0.25)', borderRadius: 10, padding: '14px 18px', marginBottom: 28, lineHeight: 1.7 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <span style={{ fontSize: 18, marginTop: 1 }}>⚖️</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#f0f6fc', marginBottom: 4 }}>Regulatory Compliance — Coming Soon</div>
+            <div style={{ fontSize: 12, color: '#8b949e' }}>
+              Tokenized truck ownership is live on Solana devnet. Full public launch is pending applicable securities regulations (Reg D / Reg A+) and CFTC guidance on asset-backed tokens. CargoFi is actively working with legal counsel to bring this product to market. Share purchases in preview mode are recorded on-chain and in our registry.
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="rg-3" style={{ marginBottom: 32 }}>
