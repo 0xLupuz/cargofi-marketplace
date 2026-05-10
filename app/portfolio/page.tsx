@@ -275,16 +275,22 @@ export default function PortfolioPage() {
             <a href="/pool" style={{ color: BRAND, textDecoration: 'none', fontSize: 13 }}>Deposit USDC to the yield pool →</a>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-            {[
-              ['Pool Shares',   poolShares.toLocaleString()],
-              ['Estimated Value', poolValue !== null ? `$${formatUsdc(poolValue)} USDC` : '—'],
-            ].map(([k, v]) => (
-              <div key={k} style={{ background: 'var(--bg-base)', borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 4 }}>{k}</div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: BRAND, fontFamily: 'monospace' }}>{v}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ background: BRAND_BG, border: `1px solid ${BRAND_BORDER}`, borderRadius: 10, padding: '16px 18px', textAlign: 'center' }}>
+              <div style={{ fontSize: 28, fontWeight: 700, color: BRAND, fontFamily: 'monospace' }}>
+                {poolValue !== null ? `$${formatUsdc(poolValue)}` : '—'}
               </div>
-            ))}
+              <div style={{ fontSize: 12, color: '#8b949e', marginTop: 4 }}>USDC in yield pool</div>
+            </div>
+            <div style={{ background: 'var(--bg-base)', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#8b949e' }}>Est. yield / invoice (3%)</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: BRAND }}>
+                {poolValue !== null ? `+$${(Number(formatUsdc(poolValue)) * 0.03).toFixed(2)} USDC` : '—'}
+              </span>
+            </div>
+            <a href="/pool" style={{ fontSize: 12, color: '#484f58', textDecoration: 'none', textAlign: 'center' }}>
+              Manage position →
+            </a>
           </div>
         )}
       </div>
