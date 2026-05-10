@@ -21,26 +21,36 @@ const [VAULT_PDA] = PublicKey.findProgramAddressSync(
 /** Decode PoolState directly from raw account bytes (IDL has no field defs) */
 function decodePoolState(data: Buffer) {
   // Layout: disc(8) + admin(32) + oracle(32) + usdcMint(32) + usdcVault(32) = 136
-  // then: totalDeposits(8) + totalDeployed(8) + totalInterestEarned(8) = 24
-  // then: unknown(16?) + feeBps(2) + advanceRateBps(2) + ...
-  const totalDeposits      = Number(data.readBigUInt64LE(136)) / 1e6
-  const totalDeployed      = Number(data.readBigUInt64LE(144)) / 1e6
+  // total_deposits(u64=8)@136 + total_deployed(u64=8)@144 + total_interest_earned(u64=8)@152
+  // total_shares(u128=16)@160 — lower 8 bytes used (upper always 0 for realistic values)
+  // factoring_fee_bps(u16=2)@176 + advance_rate_bps(u16=2)@178
+  const totalDeposits       = Number(data.readBigUInt64LE(136)) / 1e6
+  const totalDeployed       = Number(data.readBigUInt64LE(144)) / 1e6
   const totalInterestEarned = Number(data.readBigUInt64LE(152)) / 1e6
-  const factoringFeeBps    = data.readUInt16LE(176)  // 300
-  const advanceRateBps     = data.readUInt16LE(178)  // 9700
-  return { totalDeposits, totalDeployed, totalInterestEarned, factoringFeeBps, advanceRateBps }
+  const totalSharesRaw      = data.readBigUInt64LE(160)   // lower 64 bits of u128
+  const factoringFeeBps     = data.readUInt16LE(176)
+  const advanceRateBps      = data.readUInt16LE(178)
+  // total_assets = total_deposits + total_interest_earned (matches on-chain total_pool_assets())
+  const totalAssetsRaw      = BigInt(Math.round((totalDeposits + totalInterestEarned) * 1e6))
+  return { totalDeposits, totalDeployed, totalInterestEarned, totalSharesRaw, totalAssetsRaw, factoringFeeBps, advanceRateBps }
 }
 
-/** Decode LpDeposit deposit_record from raw bytes */
+// LpDeposit layout: disc(8)+owner(32)+pool(32)+shares(u128=16)@72+total_deposited(u64=8)@88+total_withdrawn(u64=8)@96+bump(u8)@104
 function decodeDepositRecord(data: Buffer) {
-  // disc(8) + depositor(32) + pool(32) + ?(16) + depositedUsdc(8) + ?(8) + shares?(8) = 144
-  const depositedUsdc = Number(data.readBigUInt64LE(88)) / 1e6
-  const shares = Number(data.readBigUInt64LE(104))
-  return { depositedUsdc, shares }
+  const sharesRaw      = data.readBigUInt64LE(72)   // lower 64 bits of u128 shares
+  const totalDeposited = Number(data.readBigUInt64LE(88)) / 1e6
+  const totalWithdrawn = Number(data.readBigUInt64LE(96)) / 1e6
+  return { sharesRaw, totalDeposited, totalWithdrawn }
 }
 
-interface PoolStats { totalDeposits: number; totalDeployed: number; totalInterestEarned: number; factoringFeeBps: number; advanceRateBps: number }
-interface MyPosition { depositedUsdc: number; usdcBalance: number }
+/** Compute current USDC value of LP position from on-chain shares + pool ratio */
+function positionUsdc(sharesRaw: bigint, totalSharesRaw: bigint, totalAssetsRaw: bigint): number {
+  if (totalSharesRaw === 0n || sharesRaw === 0n) return 0
+  return Number(sharesRaw * totalAssetsRaw / totalSharesRaw) / 1e6
+}
+
+interface PoolStats { totalDeposits: number; totalDeployed: number; totalInterestEarned: number; totalSharesRaw: bigint; totalAssetsRaw: bigint; factoringFeeBps: number; advanceRateBps: number }
+interface MyPosition { sharesRaw: bigint; usdcBalance: number }
 
 export default function PoolPage() {
   const { connected, publicKey } = useWallet()
@@ -79,7 +89,7 @@ export default function PoolPage() {
           .catch(() => null),
       ])
       setPos({
-        depositedUsdc: info ? decodeDepositRecord(info.data as Buffer).depositedUsdc : 0,
+        sharesRaw: info ? decodeDepositRecord(info.data as Buffer).sharesRaw : 0n,
         usdcBalance: ataInfo ? Number(ataInfo.amount) / 1e6 : 0,
       })
     } catch (e: any) { console.error('fetchPosition:', e.message) }
@@ -118,12 +128,24 @@ export default function PoolPage() {
 
   // ── Withdraw ──────────────────────────────────────────────────────────────
   const handleWithdraw = async () => {
-    if (!anchorWallet || !publicKey || !amount) return
+    if (!anchorWallet || !publicKey || !amount || !pool || !pos) return
     setLoading(true); setStatus(null)
     try {
       const provider     = new AnchorProvider(connection, anchorWallet, { commitment: 'confirmed' })
       const program      = getPoolProgram(provider)
-      const sharesRaw    = new BN(Math.round(parseFloat(amount) * 1_000_000))
+
+      // Compute shares to burn from USDC amount using pool ratio:
+      // shares = desired_usdc_raw * total_shares / total_assets
+      const desiredUsdcRaw = BigInt(Math.round(parseFloat(amount) * 1_000_000))
+      let sharesToBurn: bigint
+      if (pool.totalSharesRaw === 0n || pool.totalAssetsRaw === 0n) {
+        sharesToBurn = desiredUsdcRaw
+      } else {
+        sharesToBurn = desiredUsdcRaw * pool.totalSharesRaw / pool.totalAssetsRaw
+        // Cap at user's actual shares (for "max" scenario)
+        if (sharesToBurn > pos.sharesRaw) sharesToBurn = pos.sharesRaw
+      }
+      const sharesRaw    = new BN(sharesToBurn.toString())
       const depositorAta = await getAssociatedTokenAddress(USDC_MINT, publicKey)
       const [recPda]     = PublicKey.findProgramAddressSync(
         [Buffer.from('deposit'), POOL_PDA.toBuffer(), publicKey.toBuffer()], CF_POOL_PROGRAM_ID)
@@ -145,9 +167,10 @@ export default function PoolPage() {
   }
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const tvl      = pool?.totalDeposits ?? null
-  const interest = pool?.totalInterestEarned ?? null
-  const apy      = pool ? ((pool.factoringFeeBps / 10000) * (365 / 14) * 100).toFixed(1) : null   // 14-day avg
+  const tvl        = pool?.totalDeposits ?? null
+  const interest   = pool?.totalInterestEarned ?? null
+  const apy        = pool ? ((pool.factoringFeeBps / 10000) * (365 / 14) * 100).toFixed(1) : null
+  const currentUsdc = pos && pool ? positionUsdc(pos.sharesRaw, pool.totalSharesRaw, pool.totalAssetsRaw) : 0
 
   return (
     <div className="page-wrap-sm">
@@ -206,9 +229,9 @@ export default function PoolPage() {
                   <button onClick={() => setAmount(
                     tab === 'deposit'
                       ? pos.usdcBalance.toFixed(2)
-                      : pos.depositedUsdc.toFixed(2)
+                      : currentUsdc.toFixed(2)
                   )} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: BRAND }}>
-                    Max: ${(tab === 'deposit' ? pos.usdcBalance : pos.depositedUsdc).toFixed(2)}
+                    Max: ${(tab === 'deposit' ? pos.usdcBalance : currentUsdc).toFixed(2)}
                   </button>
                 )}
               </div>
@@ -257,7 +280,7 @@ export default function PoolPage() {
               <p style={{ color: '#484f58', fontSize: 13, margin: 0 }}>Connect wallet to view</p>
             ) : pos === null ? (
               <p style={{ color: '#484f58', fontSize: 13, margin: 0 }}>Loading…</p>
-            ) : pos.depositedUsdc === 0 ? (
+            ) : currentUsdc === 0 ? (
               <div>
                 <p style={{ color: '#484f58', fontSize: 13, margin: '0 0 8px' }}>No deposit yet</p>
                 <p style={{ color: '#484f58', fontSize: 11, margin: 0 }}>Wallet: ${pos.usdcBalance.toFixed(2)} USDC available</p>
@@ -265,13 +288,13 @@ export default function PoolPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ background: BRAND_BG, border: `1px solid ${BRAND_BORDER}`, borderRadius: 8, padding: '12px 14px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: BRAND }}>${pos.depositedUsdc.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: BRAND }}>${currentUsdc.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   <div style={{ fontSize: 12, color: '#8b949e', marginTop: 4 }}>Deposited in pool</div>
                 </div>
                 {pool && (
                   <div style={{ fontSize: 12, color: '#484f58', lineHeight: 1.7 }}>
                     Earning <span style={{ color: BRAND }}>{(pool.factoringFeeBps / 100).toFixed(1)}% per invoice</span> funded from this pool
-                    <br/>Est. yield on position: <span style={{ color: '#f0f6fc' }}>${(pos.depositedUsdc * pool.factoringFeeBps / 10000).toFixed(2)}/deal</span>
+                    <br/>Est. yield on position: <span style={{ color: '#f0f6fc' }}>${(currentUsdc * pool.factoringFeeBps / 10000).toFixed(2)}/deal</span>
                   </div>
                 )}
                 {[

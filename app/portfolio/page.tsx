@@ -90,18 +90,27 @@ export default function PortfolioPage() {
     // 3. Pool position (on-chain) — same seed as pool page: ['deposit', POOL_PDA, publicKey]
     try {
       const { PublicKey } = await import('@solana/web3.js')
-      const { CF_POOL_PROGRAM_ID } = await import('@/lib/solana')
+      const { CF_POOL_PROGRAM_ID, POOL_PDA: POOL_PDA_KEY } = await import('@/lib/solana')
       const [recPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from('deposit'), POOL_PDA.toBuffer(), publicKey.toBuffer()],
+        [Buffer.from('deposit'), POOL_PDA_KEY.toBuffer(), publicKey.toBuffer()],
         CF_POOL_PROGRAM_ID,
       )
-      const info = await connection.getAccountInfo(recPda, 'confirmed')
-      if (info && info.data.length >= 112) {
-        const depositedUsdc = Number((info.data as Buffer).readBigUInt64LE(88)) / 1e6
-        const shares        = Number((info.data as Buffer).readBigUInt64LE(104))
-        if (depositedUsdc > 0) {
-          setPoolShares(BigInt(shares))
-          setPoolValue(BigInt(Math.round(depositedUsdc * 1_000_000)))
+      const [recInfo, poolInfo] = await Promise.all([
+        connection.getAccountInfo(recPda, 'confirmed'),
+        connection.getAccountInfo(POOL_PDA_KEY, 'confirmed'),
+      ])
+      if (recInfo && recInfo.data.length >= 104 && poolInfo) {
+        const buf         = recInfo.data as Buffer
+        const pbuf        = poolInfo.data as Buffer
+        const sharesRaw   = buf.readBigUInt64LE(72)    // lower 64 bits of u128
+        const totalSharesRaw = pbuf.readBigUInt64LE(160)  // lower 64 bits of u128
+        const totalDeposits  = Number(pbuf.readBigUInt64LE(136))
+        const totalInterest  = Number(pbuf.readBigUInt64LE(152))
+        const totalAssetsRaw = totalDeposits + totalInterest
+        if (sharesRaw > 0n && totalSharesRaw > 0n) {
+          const valueRaw = sharesRaw * BigInt(totalAssetsRaw) / totalSharesRaw
+          setPoolShares(sharesRaw)
+          setPoolValue(valueRaw)
         }
       }
     } catch { /* no position */ }
