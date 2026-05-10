@@ -87,28 +87,24 @@ export default function PortfolioPage() {
 
     setInvoices((deals ?? []) as InvoiceDeal[])
 
-    // 3. Pool position (on-chain)
-    if (anchorWallet) {
-      try {
-        const { PublicKey } = await import('@solana/web3.js')
-        const { CF_POOL_PROGRAM_ID } = await import('@/lib/solana')
-        const provider = new AnchorProvider(connection, anchorWallet, { commitment: 'confirmed' })
-        const program = getPoolProgram(provider)
-        const [positionPda] = PublicKey.findProgramAddressSync(
-          [Buffer.from('position'), POOL_PDA.toBuffer(), publicKey.toBuffer()],
-          CF_POOL_PROGRAM_ID,
-        )
-        const pos = await (program.account as any).investorPosition.fetch(positionPda).catch(() => null)
-        if (pos) {
-          setPoolShares(BigInt(pos.shares.toString()))
-          const pool = await (program.account as any).investmentPool.fetch(POOL_PDA).catch(() => null)
-          if (pool && pool.totalShares.toString() !== '0') {
-            const value = BigInt(pos.shares.toString()) * BigInt(pool.totalAssets.toString()) / BigInt(pool.totalShares.toString())
-            setPoolValue(value)
-          }
+    // 3. Pool position (on-chain) — same seed as pool page: ['deposit', POOL_PDA, publicKey]
+    try {
+      const { PublicKey } = await import('@solana/web3.js')
+      const { CF_POOL_PROGRAM_ID } = await import('@/lib/solana')
+      const [recPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from('deposit'), POOL_PDA.toBuffer(), publicKey.toBuffer()],
+        CF_POOL_PROGRAM_ID,
+      )
+      const info = await connection.getAccountInfo(recPda, 'confirmed')
+      if (info && info.data.length >= 112) {
+        const depositedUsdc = Number((info.data as Buffer).readBigUInt64LE(88)) / 1e6
+        const shares        = Number((info.data as Buffer).readBigUInt64LE(104))
+        if (depositedUsdc > 0) {
+          setPoolShares(BigInt(shares))
+          setPoolValue(BigInt(Math.round(depositedUsdc * 1_000_000)))
         }
-      } catch { /* no position */ }
-    }
+      }
+    } catch { /* no position */ }
 
     // 4. USDC balance
     try {

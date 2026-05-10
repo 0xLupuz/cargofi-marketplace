@@ -110,7 +110,7 @@ export default function PoolPage() {
 
       setStatus({ type: 'success', msg: `Deposited ${amount} USDC · ${shortPubkey(sig)}` })
       setAmount('')
-      setTimeout(() => { fetchPool(); fetchPosition() }, 2000)
+      setTimeout(() => { fetchPool(); fetchPosition() }, 4000)
     } catch (e: any) {
       setStatus({ type: 'error', msg: e?.message?.slice(0, 150) ?? 'Transaction failed' })
     } finally { setLoading(false) }
@@ -138,7 +138,7 @@ export default function PoolPage() {
 
       setStatus({ type: 'success', msg: `Withdrew ${amount} USDC · ${shortPubkey(sig)}` })
       setAmount('')
-      setTimeout(() => { fetchPool(); fetchPosition() }, 2000)
+      setTimeout(() => { fetchPool(); fetchPosition() }, 4000)
     } catch (e: any) {
       setStatus({ type: 'error', msg: e?.message?.slice(0, 150) ?? 'Transaction failed' })
     } finally { setLoading(false) }
