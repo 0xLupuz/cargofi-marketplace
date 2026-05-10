@@ -300,9 +300,9 @@ export default function InvoicesPage() {
                         </div>
                         {/* APY */}
                         <div style={{ background: 'var(--bg-card)', borderRadius: 8, padding: '10px 14px' }}>
-                          <div style={{ fontSize: 10, color: '#484f58', marginBottom: 8 }}>APY IF BROKER PAYS IN…</div>
+                          <div style={{ fontSize: 10, color: '#484f58', marginBottom: 8 }}>EST. APY</div>
                           <div style={{ display: 'flex', gap: 6 }}>
-                            {[7, 14, 30, 45].map(days => {
+                            {[30, 45].map(days => {
                               const rate = investorYield / advance
                               const apy  = ((Math.pow(1 + rate, 365 / days) - 1) * 100).toFixed(0)
                               return (
