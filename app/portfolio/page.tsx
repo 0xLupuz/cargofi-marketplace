@@ -143,6 +143,8 @@ export default function PortfolioPage() {
   const pk = publicKey!.toBase58()
   const totalTruckShares = holdings.reduce((s, h) => s + h.shares_bought, 0)
   const totalTruckUsdc   = holdings.reduce((s, h) => s + h.total_usdc, 0)
+  // Capital deployed in invoices = 97% advance of each gross amount
+  const totalInvoiceCapital = invoices.reduce((s, inv) => s + Number(inv.gross_amount_usdc) * 0.97, 0)
 
   return (
     <div className="page-wrap-sm">
@@ -172,9 +174,9 @@ export default function PortfolioPage() {
       {/* Summary stats */}
       <div className="rg-3" style={{ marginBottom: 28 }}>
         {[
-          { label: 'Pool Value',   value: poolValue !== null ? `$${formatUsdc(poolValue)}` : '$—', color: BRAND   },
-          { label: 'Active Deals', value: invoices.length.toString(),                              color: BLUE     },
-          { label: 'Truck Shares', value: totalTruckShares.toLocaleString(),                       color: PURPLE   },
+          { label: 'Pool Value',      value: poolValue !== null ? `$${formatUsdc(poolValue)}` : '$—',                                          color: BRAND  },
+          { label: 'Invoice Capital', value: totalInvoiceCapital > 0 ? `$${totalInvoiceCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$—', color: BLUE   },
+          { label: 'Truck Shares',    value: totalTruckUsdc > 0 ? `$${totalTruckUsdc.toFixed(2)}` : '$—',                                     color: PURPLE },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: '18px 16px' }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: s.color }}>{s.value}</div>
